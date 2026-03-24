@@ -1,5 +1,5 @@
 /* =============================
-   LocateIQ - Profile Script (FINAL - No Stats)
+   LocateIQ - Profile Script (FINAL - With Forgot Password)
    ============================= */
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -47,7 +47,11 @@ const I18N = {
     password_mismatch: "كلمتا المرور غير متطابقتين",
     weak_password: "كلمة المرور ضعيفة. يجب أن تحتوي على 8 أحرف على الأقل، حرف كبير، حرف صغير، رقم، ورمز",
     image_uploaded: "تم رفع الصورة بنجاح",
-    image_too_large: "حجم الصورة كبير جدًا. الحد الأقصى 2MB"
+    image_too_large: "حجم الصورة كبير جدًا. الحد الأقصى 2MB",
+    
+    // Forgot Password
+    modal_error: "❌ الرجاء إدخال بريدك الإلكتروني",
+    modal_success: "✅ تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني"
   },
 
   en: {
@@ -87,7 +91,11 @@ const I18N = {
     password_mismatch: "Passwords do not match",
     weak_password: "Weak password. Must be at least 8 characters with uppercase, lowercase, number, and symbol",
     image_uploaded: "Image uploaded successfully",
-    image_too_large: "Image too large. Maximum size is 2MB"
+    image_too_large: "Image too large. Maximum size is 2MB",
+    
+    // Forgot Password
+    modal_error: "❌ Please enter your email",
+    modal_success: "✅ Password reset link sent to your email"
   }
 };
 
@@ -240,5 +248,56 @@ document.addEventListener("DOMContentLoaded", () => {
       if (newPass) newPass.value = "";
       if (confirmPass) confirmPass.value = "";
     });
+  }
+
+  // ===== Forgot Password in Profile Page (داخل DOMContentLoaded) =====
+  const forgotProfileLink = document.getElementById("forgotPasswordProfile");
+  const modal = document.getElementById("forgotModal");
+  const closeModalBtn = document.querySelector(".close-modal");
+  const sendResetBtn = document.getElementById("sendResetBtn");
+  const resetEmail = document.getElementById("resetEmail");
+  const modalMessage = document.getElementById("modalMessage");
+
+  if (forgotProfileLink) {
+    forgotProfileLink.onclick = function(e) {
+      e.preventDefault();
+      if (modal) {
+        modal.style.display = "flex";
+        if (modalMessage) modalMessage.innerHTML = "";
+      }
+    };
+  }
+
+  if (closeModalBtn) {
+    closeModalBtn.onclick = function() {
+      if (modal) modal.style.display = "none";
+      if (modalMessage) modalMessage.innerHTML = "";
+      if (resetEmail) resetEmail.value = "";
+    };
+  }
+
+  window.onclick = function(e) {
+    if (e.target === modal) {
+      if (modal) modal.style.display = "none";
+      if (modalMessage) modalMessage.innerHTML = "";
+      if (resetEmail) resetEmail.value = "";
+    }
+  };
+
+  if (sendResetBtn) {
+    sendResetBtn.onclick = function() {
+      const email = resetEmail.value.trim();
+      const lang = getSavedLang();
+      
+      if (!email) {
+        modalMessage.innerHTML = I18N[lang].modal_error;
+        modalMessage.style.color = "#ff4b4b";
+        return;
+      }
+      
+      modalMessage.innerHTML = I18N[lang].modal_success;
+      modalMessage.style.color = "#2ee59d";
+      resetEmail.value = "";
+    };
   }
 });

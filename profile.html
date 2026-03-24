@@ -45,7 +45,7 @@
             <path d="M9.2 14.8 14.8 9.2l-2.2 5.6-3.4 0Z" opacity=".7"/>
           </svg>
         </span>
-        <span class="brand-text">LocateIQ</span>
+        <span class="brand-text">Locate<span class="brand-glow">IQ</span></span>
       </a>
 
       <nav class="nav-center" aria-label="روابط">
@@ -177,42 +177,58 @@
         </div>
 
         <!-- 3. تغيير كلمة المرور -->
-<div class="profile-card password-card">
-  <h2 class="profile-card-title" data-i18n="change_password">تغيير كلمة المرور</h2>
-  
-  <div class="password-fields">
-    <div class="info-field">
-      <label data-i18n="current_password">كلمة المرور الحالية</label>
-      <input type="text" id="currentPassword" placeholder="">
-    </div>
+        <div class="profile-card password-card">
+          <h2 class="profile-card-title" data-i18n="change_password">تغيير كلمة المرور</h2>
+          
+          <div class="password-fields">
+            <div class="info-field">
+              <label data-i18n="current_password">كلمة المرور الحالية</label>
+              <input type="password" id="currentPassword" placeholder=" ">
+              <!-- ✅ رابط "نسيت كلمة المرور" -->
+              <div class="forgot-password-profile">
+                <a href="#" id="forgotPasswordProfile" class="forgot-link-profile" data-i18n="forgot_password">نسيت كلمة المرور؟</a>
+              </div>
+            </div>
 
-    <div class="info-field">
-      <label data-i18n="new_password">كلمة المرور الجديدة</label>
-      <input type="text" id="newPassword" placeholder="">
-    </div>
+            <div class="info-field">
+              <label data-i18n="new_password">كلمة المرور الجديدة</label>
+              <input type="password" id="newPassword" placeholder=" ">
+            </div>
 
-    <div class="info-field">
-      <label data-i18n="confirm_password">تأكيد كلمة المرور</label>
-      <input type="text" id="confirmPassword" placeholder="">
-    </div>
-  </div>
+            <div class="info-field">
+              <label data-i18n="confirm_password">تأكيد كلمة المرور</label>
+              <input type="password" id="confirmPassword" placeholder=" ">
+            </div>
+          </div>
 
-  <div class="profile-actions">
-    <button class="btn btn-secondary" id="changePasswordBtn" data-i18n="update_password">
-      <span>🔒</span>
-      <span>تحديث كلمة المرور</span>
-    </button>
-  </div>
-</div>
+          <div class="profile-actions">
+            <button class="btn btn-secondary" id="changePasswordBtn" data-i18n="update_password">
+              <span>🔒</span>
+              <span>تحديث كلمة المرور</span>
+            </button>
+          </div>
+        </div>
 
       </div>
     </div>
   </main>
 
+  <!-- ✅ Modal (نافذة استعادة كلمة المرور) -->
+ <div id="forgotModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal">&times;</span>
+    <h3 id="modalTitle">استعادة كلمة المرور</h3>
+    <p id="modalDesc">أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين</p>
+    <input type="email" id="resetEmail" placeholder="البريد الإلكتروني" class="modal-input">
+    <button id="sendResetBtn" class="modal-btn">إرسال رابط الاستعادة</button>
+    <p id="modalMessage" class="modal-message"></p>
+  </div>
+</div>
+
   <!-- Footer -->
   <footer class="dashboard-footer">
     <div class="container">
-      <p>© 2026 <span class="brand-glow">LocateIQ</span> - <span data-i18n="footer_rights">جميع الحقوق محفوظة</span></p>
+      <p>©️ 2026 <span class="brand-glow">LocateIQ</span> - <span data-i18n="footer_rights">جميع الحقوق محفوظة</span></p>
     </div>
   </footer>
 

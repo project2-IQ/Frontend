@@ -64,14 +64,12 @@
     <div class="container login-inner">
 
       <!-- Title -->
-       <div class="login-head">
-       <h1 class="login-title" id="title">
-       <span id="welcomeText">مرحباً بك في</span> 
-       <span class="brand-glow">LocateIQ</span>
+      <div class="login-head">
+        <h1 class="login-title" id="title">
+          <span id="welcomeText">مرحباً بك في</span> 
+          <span class="brand-glow">LocateIQ</span>
         </h1>
-
-
-         <p class="login-subtitle" id="subtitle">حيث تبدأ الاستثمارات الذكية</p>
+        <p class="login-subtitle" id="subtitle">حيث تبدأ الاستثمارات الذكية</p>
       </div>
 
       <!-- Login Card -->
@@ -85,6 +83,11 @@
 
         <button class="login-btn" type="submit" id="loginBtn">تسجيل الدخول ←</button>
 
+        <!-- ✅ رابط "نسيت كلمة المرور" -->
+        <div class="forgot-password">
+          <a href="#" id="forgotPasswordLink" class="forgot-link" data-i18n="forgot_password">نسيت كلمة المرور؟</a>
+        </div>
+
         <p class="login-foot">
           <span id="noAccount">ليس لديك حساب؟</span>
           <a href="signup.html" id="signupLink">إنشاء حساب</a>
@@ -94,10 +97,22 @@
     </div>
   </main>
 
+  <!-- ✅ Modal (نافذة منبثقة) -->
+  <div id="forgotModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3 id="modalTitle">استعادة كلمة المرور</h3>
+      <p id="modalDesc">أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين</p>
+      <input type="email" id="resetEmail" placeholder="البريد الإلكتروني" class="modal-input">
+      <button id="sendResetBtn" class="modal-btn">إرسال رابط الاستعادة</button>
+      <p id="modalMessage" class="modal-message"></p>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="login-footer">
     <div class="container">
-      <p>© 2026 <span class="brand-glow">LocateIQ</span> - <span id="footerRights">جميع الحقوق محفوظة</span></p>
+      <p>©️ 2026 <span class="brand-glow">LocateIQ</span> - <span id="footerRights">جميع الحقوق محفوظة</span></p>
     </div>
   </footer>
 

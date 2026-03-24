@@ -342,3 +342,108 @@ html[data-theme="dark"] .dashboard-footer {
     font-size: 1.3rem;
   }
 }
+/* ===== Forgot Password in Profile Page ===== */
+.forgot-password-profile {
+  text-align: left;
+  margin-top: 8px;
+}
+
+.forgot-link-profile {
+  color: #2563EB !important;
+  font-size: 0.8rem;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.25s ease;
+  display: inline-block;
+}
+
+.forgot-link-profile:hover {
+  color: var(--orange) !important;
+  text-decoration: underline;
+}
+
+/* RTL Support */
+html[dir="rtl"] .forgot-password-profile {
+  text-align: right;
+}
+
+/* ===== Modal Styling ===== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: 24px;
+  padding: 30px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.modal-content h3 {
+  margin-bottom: 10px;
+  color: var(--text);
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.modal-content p {
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: var(--glass);
+  color: var(--text);
+  margin-bottom: 20px;
+  outline: none;
+}
+
+.modal-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 999px;
+  border: none;
+  background: var(--orange);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.modal-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255,122,24,.3);
+}
+
+.close-modal {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.25s ease;
+}
+
+.close-modal:hover {
+  color: var(--orange);
+}
