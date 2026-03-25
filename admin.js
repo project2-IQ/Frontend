@@ -424,13 +424,16 @@ function bindEvents() {
     e.preventDefault();
     const lang = getSavedLang();
     
-    try {
-      const projectPath = "C:/Users/YourName/Projects/LocateIQ";
-      window.location.href = `vscode://folder/${projectPath}`;
-      alert(I18N[lang].vs_code_opening);
-    } catch (error) {
-      alert(I18N[lang].vs_code_error);
-    }
+   try {
+    // استخدمي encodeURIComponent عشان ترميز المسار
+    const projectPath = encodeURIComponent('C:\\Users\\jf645\\OneDrive\\سطح المكتب\\Frontend');
+    
+    window.location.href = `vscode://file/${projectPath}`;
+    
+    alert(I18N[lang].vs_code_opening);
+} catch (error) {
+    alert(I18N[lang].vs_code_error);
+}
   });
 
   // تسجيل الخروج
