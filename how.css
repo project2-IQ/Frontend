@@ -1,5 +1,5 @@
 /* =============================
-   LocateIQ - How-to-Use Page
+   LocateIQ - How-to-Use Page (FIXED)
    ============================= */
 
 /* Hero Section */
@@ -227,7 +227,6 @@ html[data-theme="dark"] .how-footer {
   align-items:center;
   justify-content:center;
   flex-shrink:0;
-
   background:#f8dfbf;
   border:1px solid #efc992;
   box-shadow:none;
@@ -235,12 +234,10 @@ html[data-theme="dark"] .how-footer {
   overflow:hidden;
 }
 
-/* نخفي أي svg داخل الأيقونة */
 .brand-icon svg{
   display:none !important;
 }
 
-/* الدائرة الداخلية فقط */
 .brand-icon::before{
   content:"";
   width:14px;
@@ -251,97 +248,96 @@ html[data-theme="dark"] .how-footer {
   display:block;
 }
 
-/* نلغي أي after قديم */
 .brand-icon::after{
   content:none !important;
 }
 
 /* =========================
-   TOPBAR — FINAL PROFESSIONAL
+   TOPBAR — FULL RESPONSIVE
    ========================= */
 
-.topbar-inner{
-  display:flex;
-  align-items:center;
+.topbar-inner {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   position: relative;
 }
 
-/* ===== يمين: اللوقو ===== */
-.brand{
-  margin-left:auto;
-  display:flex;
-  flex-direction: row-reverse;
-  align-items:center;
-  gap:10px;
+/* Brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 900;
 }
 
-/* ===== النص بالنص ===== */
-.nav-center{
+/* Nav Center */
+.nav-center {
   position: absolute;
-  left:50%;
+  left: 50%;
   transform: translateX(-50%);
-  display:flex;
-  align-items:center;
-  gap:20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.nav-center .nav-link{
-  font-weight:800;
-  color:#64748b;
-  text-decoration:none;
-  padding:8px 14px;
-  border-radius:999px;
-  transition:.2s;
+.nav-center .nav-link {
+  font-weight: 800;
+  color: #64748b;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  transition: .2s;
 }
 
-.nav-center .nav-link:hover{
-  background:rgba(37,99,235,.08);
-  color:#2563EB;
+.nav-center .nav-link:hover {
+  background: rgba(37,99,235,.08);
+  color: #2563EB;
 }
 
-/* ===== يسار: الأزرار ===== */
-.actions{
-  display:flex;
-  align-items:center;
-  gap:10px;
+/* Actions */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* زر اللغة */
-.lang-btn{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:8px 12px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,0.08);
-  background:#fff;
-  font-weight:700;
-  cursor:pointer;
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-/* زر الثيم */
-.theme-btn{
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  border:none;
-  background:rgba(0,0,0,0.05);
-  cursor:pointer;
+/* ===== RTL (عربي) ===== */
+html[dir="rtl"] .brand {
+  margin-left: auto;
+  margin-right: 0;
+  flex-direction: row-reverse;
 }
 
-/* =========================
-   FIX RTL SPACING
-   ========================= */
-html[dir="rtl"] .actions{
-  margin-right:auto;
+html[dir="rtl"] .actions {
+  margin-left: 0;
+  margin-right: auto;
 }
 
-html[dir="rtl"] .brand{
-  margin-left:0;
-  margin-right:0;
+/* ===== LTR (إنجليزي) ===== */
+html[dir="ltr"] .brand {
+  margin-left: 0;
+  margin-right: auto;
+  flex-direction: row;
 }
 
+html[dir="ltr"] .actions {
+  margin-left: auto;
+  margin-right: 0;
+}
 
 /* ===== THEME BUTTON ===== */
 .theme-btn {

@@ -159,7 +159,7 @@ body{
 
 .login-card label{
   display:block;
-  text-align:right;
+  text-align: start;
   margin: 12px 0 8px;
   font-weight: 800;
   color: #334155;
@@ -317,16 +317,16 @@ html[data-theme="dark"] .login-footer p {
    FIX: رفع العنوان شوي للأعلى
    ========================= */
 .login-head {
-  margin-bottom: 24px;   /* يخلي مسافة تحت العنوان */
+  margin-bottom: 24px;
 }
 
 .login-title {
-  margin-bottom: 20px !important;   /* مسافة بين السطر الأول والثاني */
-  line-height: 1.3;                 /* يخلي النص مريح */
+  margin-bottom: 20px !important;
+  line-height: 1.3;
 }
 
 .login-subtitle {
-  margin-top: 4px;         /* يرفع النص الثاني شوي */
+  margin-top: 4px;
   font-size: 18px;
 }
 
@@ -355,7 +355,6 @@ html[data-theme="dark"] .login-footer p {
   align-items:center;
   justify-content:center;
   flex-shrink:0;
-
   background:#f8dfbf;
   border:1px solid #efc992;
   box-shadow:none;
@@ -363,12 +362,10 @@ html[data-theme="dark"] .login-footer p {
   overflow:hidden;
 }
 
-/* نخفي أي svg داخل الأيقونة */
 .brand-icon svg{
   display:none !important;
 }
 
-/* الدائرة الداخلية فقط */
 .brand-icon::before{
   content:"";
   width:14px;
@@ -379,63 +376,75 @@ html[data-theme="dark"] .login-footer p {
   display:block;
 }
 
-/* نلغي أي after قديم */
 .brand-icon::after{
   content:none !important;
 }
 
 /* =========================
-   TOPBAR — FINAL PROFESSIONAL
+   TOPBAR — FULL RESPONSIVE
    ========================= */
 
-.topbar-inner{
-  display:flex;
-  align-items:center;
+.topbar-inner {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   position: relative;
 }
 
-/* ===== يمين: اللوقو ===== */
-.brand{
-  margin-left:auto;
-  display:flex;
+/* الوضع RTL (عربي) */
+html[dir="rtl"] .brand {
+  margin-left: auto;
+  margin-right: 0;
+  display: flex;
   flex-direction: row-reverse;
-  align-items:center;
-  gap:10px;
+  align-items: center;
+  gap: 10px;
 }
 
-/* ===== النص بالنص ===== */
-.nav-center{
+html[dir="rtl"] .nav-center {
   position: absolute;
-  left:50%;
+  left: 50%;
   transform: translateX(-50%);
-  display:flex;
-  align-items:center;
-  gap:20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.nav-center .nav-link{
-  font-weight:800;
-  color:#64748b;
-  text-decoration:none;
-  padding:8px 14px;
-  border-radius:999px;
-  transition:.2s;
+html[dir="rtl"] .actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 0;
+  margin-right: auto;
 }
 
-.nav-center .nav-link:hover{
-  background:rgba(37,99,235,.08);
-  color:#2563EB;
+/* الوضع LTR (إنجليزي) */
+html[dir="ltr"] .brand {
+  margin-left: 0;
+  margin-right: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
-/* ===== يسار: الأزرار ===== */
-.actions{
-  display:flex;
-  align-items:center;
-  gap:10px;
+html[dir="ltr"] .nav-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-/* زر اللغة */
+html[dir="ltr"] .actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  margin-right: 0;
+}
+
 .lang-btn{
   display:flex;
   align-items:center;
@@ -446,28 +455,6 @@ html[data-theme="dark"] .login-footer p {
   background:#fff;
   font-weight:700;
   cursor:pointer;
-}
-
-/* زر الثيم */
-.theme-btn{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  border:none;
-  background:rgba(0,0,0,0.05);
-  cursor:pointer;
-}
-
-/* =========================
-   FIX RTL SPACING
-   ========================= */
-html[dir="rtl"] .actions{
-  margin-right:auto;
-}
-
-html[dir="rtl"] .brand{
-  margin-left:0;
-  margin-right:0;
 }
 
 /* ===== THEME BUTTON ===== */

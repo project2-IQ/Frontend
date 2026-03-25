@@ -92,68 +92,129 @@ body{
 }
 
 .topbar-inner{
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: space-between;
+  position: relative;
 }
 
+/* Brand */
 .brand{
   display:flex;
   align-items:center;
   gap:10px;
   text-decoration:none;
-  color: var(--deep);
   font-weight:900;
-  justify-self: start;
 }
 
 .brand-icon{
-  width:34px; height:34px;
-  display:grid; place-items:center;
-  border-radius:999px;
-  background: rgba(37,99,235,.10);
-  border: 1px solid rgba(37,99,235,.14);
-  box-shadow: 0 0 20px rgba(37,99,235,.10);
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f8dfbf;
+  border:1px solid #efc992;
+  position:relative;
+  overflow:hidden;
 }
 
-.nav-center{ justify-self: center; }
+.brand-icon svg{
+  display:none !important;
+}
+
+.brand-icon::before{
+  content:"";
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  background:#fff7ec;
+  border:1px solid #efc992;
+  display:block;
+}
+
+.brand-text{
+  font-size:20px;
+  color:#d98a3a;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+
+/* Nav Center */
+.nav-center{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
 .nav-center .nav-link{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  padding: 10px 18px;
+  padding: 8px 14px;
   border-radius:999px;
   font-weight:800;
   text-decoration:none;
+  color:#64748b;
+  transition:.2s;
+}
+
+.nav-center .nav-link:hover{
+  background:rgba(37,99,235,.08);
+  color:#2563EB;
+}
+
+.nav-center .nav-link.active{
   color: var(--deep);
   background: rgba(37,99,235,.08);
   border: 1px solid rgba(37,99,235,.12);
-  box-shadow: 0 0 18px rgba(37,99,235,.10);
 }
 
+/* Actions */
 .actions{
-  justify-self: end;
   display:flex;
   align-items:center;
-  gap: 16px;
+  gap:10px;
 }
 
 .lang-btn{
-  cursor:pointer;
-  display:inline-flex;
+  display:flex;
   align-items:center;
-  gap:10px;
-  padding: 10px 18px;
+  gap:6px;
+  padding:8px 12px;
   border-radius:999px;
-  border: 1px solid rgba(37,99,235,.14);
-  background: rgba(255,255,255,.65);
-  font-weight:800;
-  color: var(--deep);
-  box-shadow:
-    0 0 18px rgba(37,99,235,.10),
-    0 12px 24px rgba(15,23,42,.06);
+  border:1px solid rgba(0,0,0,0.08);
+  background:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+
+/* ===== RTL (عربي) ===== */
+html[dir="rtl"] .brand {
+  margin-left: auto;
+  margin-right: 0;
+  flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .actions {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* ===== LTR (إنجليزي) ===== */
+html[dir="ltr"] .brand {
+  margin-left: 0;
+  margin-right: auto;
+  flex-direction: row;
+}
+
+html[dir="ltr"] .actions {
+  margin-left: auto;
+  margin-right: 0;
 }
 
 /* =========================
@@ -485,6 +546,7 @@ body{
   .about-grid{ grid-template-columns: 1fr; }
   .about-panel{ grid-template-columns: 1fr; }
 }
+
 /* =========================
    ABOUT DARK MODE FIX
    ========================= */
@@ -576,146 +638,6 @@ html[data-theme="dark"] .about-footer {
 html[data-theme="dark"] .about-footer p {
   color: rgba(200,210,230,0.85);
 }
-/* ===== Brand / Logo FINAL ===== */
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  text-decoration:none;
-  font-weight:800;
-  letter-spacing:.2px;
-}
-
-.brand-text{
-  font-size:20px;
-  color:#d98a3a;
-  font-weight:900;
-  letter-spacing:.2px;
-}
-
-.brand-icon{
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-shrink:0;
-
-  background:#f8dfbf;
-  border:1px solid #efc992;
-  box-shadow:none;
-  position:relative;
-  overflow:hidden;
-}
-
-/* نخفي أي svg داخل الأيقونة */
-.brand-icon svg{
-  display:none !important;
-}
-
-/* الدائرة الداخلية فقط */
-.brand-icon::before{
-  content:"";
-  width:14px;
-  height:14px;
-  border-radius:50%;
-  background:#fff7ec;
-  border:1px solid #efc992;
-  display:block;
-}
-
-/* نلغي أي after قديم */
-.brand-icon::after{
-  content:none !important;
-}
-
-/* =========================
-   TOPBAR — FINAL PROFESSIONAL
-   ========================= */
-
-.topbar-inner{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  position: relative;
-}
-
-/* ===== يمين: اللوقو ===== */
-.brand{
-  margin-left:auto;
-  display:flex;
-  flex-direction: row-reverse;
-  align-items:center;
-  gap:10px;
-}
-
-/* ===== النص بالنص ===== */
-.nav-center{
-  position: absolute;
-  left:50%;
-  transform: translateX(-50%);
-  display:flex;
-  align-items:center;
-  gap:20px;
-}
-
-.nav-center .nav-link{
-  font-weight:800;
-  color:#64748b;
-  text-decoration:none;
-  padding:8px 14px;
-  border-radius:999px;
-  transition:.2s;
-}
-
-.nav-center .nav-link:hover{
-  background:rgba(37,99,235,.08);
-  color:#2563EB;
-}
-
-/* ===== يسار: الأزرار ===== */
-.actions{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-/* زر اللغة */
-.lang-btn{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:8px 12px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,0.08);
-  background:#fff;
-  font-weight:700;
-  cursor:pointer;
-}
-
-/* زر الثيم */
-.theme-btn{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  border:none;
-  background:rgba(0,0,0,0.05);
-  cursor:pointer;
-}
-
-/* =========================
-   FIX RTL SPACING
-   ========================= */
-html[dir="rtl"] .actions{
-  margin-right:auto;
-}
-
-html[dir="rtl"] .brand{
-  margin-left:0;
-  margin-right:0;
-}
-
 
 /* ===== THEME BUTTON ===== */
 .theme-btn {

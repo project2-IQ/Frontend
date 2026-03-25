@@ -1,4 +1,4 @@
-// login.js (FINAL - مع حساب أدمن ديمو + Forgot Password)
+// login.js (FINAL - مع اتجاه ثابت)
 document.addEventListener("DOMContentLoaded", () => {
   const LANG_KEY = "locateiq_lang";
 
@@ -80,8 +80,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function applyLang(lang) {
     const isEnglish = lang === "en";
-    document.documentElement.lang = isEnglish ? "en" : "ar";
-    document.documentElement.dir  = isEnglish ? "ltr" : "rtl";
+    
+    // ✅ تغيير اتجاه الصفحة أول شيء
+    document.documentElement.setAttribute("dir", isEnglish ? "ltr" : "rtl");
+    document.documentElement.setAttribute("lang", isEnglish ? "en" : "ar");
+    document.body.style.direction = isEnglish ? "ltr" : "rtl";
+    
+    // تأكيد أن الـ dir تغير
+    console.log("Language changed to:", lang, "dir:", document.documentElement.dir);
 
     if (langText) langText.textContent = I18N[lang].lang_btn;
     if (navHome) navHome.textContent = I18N[lang].nav_home;
@@ -133,7 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const password = passInput.value.trim();
       const lang = getSavedLang();
 
-      // حساب الأدمن التجريبي
       if (email === "admin@locateiq.com" && password === "Admin@123") {
         localStorage.setItem("is_logged_in", "true");
         localStorage.setItem("user_role", "admin");
