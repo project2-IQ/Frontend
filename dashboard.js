@@ -1,5 +1,5 @@
 /* =============================
-   LocateIQ - Dashboard Script (FINAL)
+   LocateIQ - Dashboard Script (FINAL with Backend)
    ============================= */
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -8,6 +8,30 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const LANG_KEY = "locateiq_lang";
 const getSavedLang = () => localStorage.getItem(LANG_KEY) || "ar";
 const setSavedLang = (lang) => localStorage.setItem(LANG_KEY, lang);
+
+// ============================================
+// إعدادات الباك إند
+// ============================================
+const API_BASE_URL = "http://localhost:8000";
+
+// ============================================
+// دالة جلب user_id من localStorage
+// ============================================
+function getUserId() {
+  return localStorage.getItem("user_id");
+}
+
+// ============================================
+// دالة التحقق من تسجيل الدخول
+// ============================================
+function checkAuth() {
+  const userId = getUserId();
+  if (!userId) {
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
 
 const I18N = {
   ar: {
@@ -27,6 +51,8 @@ const I18N = {
     chat_welcome: "أهلًا! اكتب مشروعك في عسير مثل: \"مقهى في أبها\" أو \"مطعم في خميس مشيط\".",
     chat_ph: "صف مشروعك...",
     bot_reply: "تم! هذه نتيجة أولية (تجريبية). لاحقًا بنربطها بالنموذج والخريطة الدقيقة.",
+    analyzing: "جاري التحليل...",
+    error_msg: "حدث خطأ أثناء التحليل. تأكد من تشغيل الخادم.",
 
     map_title: "خريطة الاستثمار - عسير",
     map_hint: "الخريطة ستظهر بعد إدخال وصف المشروع",
@@ -58,6 +84,8 @@ const I18N = {
     chat_welcome: "Hi! Describe your Asir project like: “Coffee shop in Abha” or “Restaurant in Khamis Mushait”.",
     chat_ph: "Describe your project...",
     bot_reply: "Done! This is a demo output. Next we’ll connect the ML model and the accurate Asir map.",
+    analyzing: "Analyzing...",
+    error_msg: "Error during analysis. Make sure the server is running.",
 
     map_title: "Asir Region Investment Map",
     map_hint: "The map will appear after you describe your project",
@@ -76,21 +104,18 @@ const I18N = {
 const t = (lang, key) => I18N?.[lang]?.[key] ?? null;
 
 function applyI18nToDom(lang) {
-  // عناصر data-i18n
   $$("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
     const val = t(lang, key);
     if (val != null) el.textContent = val;
   });
 
-  // placeholders
   $$("[data-i18n-placeholder]").forEach(el => {
     const key = el.getAttribute("data-i18n-placeholder");
     const val = t(lang, key);
     if (val != null) el.setAttribute("placeholder", val);
   });
 
-  // title
   const titleEl = $("title[data-i18n-title]");
   if (titleEl) {
     const key = titleEl.getAttribute("data-i18n-title");
@@ -110,7 +135,7 @@ function applyLang(lang) {
   applyI18nToDom(lang);
 }
 
-// ===== SIDE MENU مع تعتيم الخلفية =====
+// ===== SIDE MENU =====
 const menuFab = $("#menuFab");
 const menuClose = $("#menuClose");
 const sideMenu = $("#sideMenu");
@@ -153,11 +178,199 @@ function addMessage(type, text) {
   chatBody.scrollTop = chatBody.scrollHeight;
 }
 
+// ============================================
+// دالة تحليل المشروع (ربط مع الباك إند)
+// ============================================
+async function analyzeProject(projectText) {
+  const lang = getSavedLang();
+  const userId = getUserId();
+  
+  if (!userId) {
+    addMessage("bot", lang === "ar" ? "يرجى تسجيل الدخول أولاً" : "Please login first");
+    window.location.href = "login.html";
+    return;
+  }
+  
+  // إظهار رسالة "جاري التحليل"
+  addMessage("bot", t(lang, "analyzing") || "Analyzing...");
+  
+  try {
+    // تحليل النص لاستخراج نوع المشروع والموقع
+    // هذه محاكاة بسيطة، ممكن تطويرها
+    let projectType = "عام";
+    let location = "عسير";
+    
+    if (projectText.includes("مقهى") || projectText.includes("cafe")) {
+      projectType = "مقهى";
+    } else if (projectText.includes("مطعم") || projectText.includes("restaurant")) {
+      projectType = "مطعم";
+    } else if (projectText.includes("متجر") || projectText.includes("shop")) {
+      projectType = "متجر";
+    }
+    
+    if (projectText.includes("أبها") || projectText.includes("Abha")) {
+      location = "أبها";
+    } else if (projectText.includes("خميس") || projectText.includes("Khamis")) {
+      location = "خميس مشيط";
+    }
+    
+    // ============================================
+    // 🔗 ربط مع الباك إند
+    // ============================================
+    const response = await fetch(`${API_BASE_URL}/investor/analyze?user_id=${userId}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        project_name: projectText,
+        project_type: projectType,
+        location: location
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // ============================================
+    // عرض النتيجة
+    // ============================================
+    let resultText = "";
+    if (lang === "ar") {
+      resultText = `📊 **نتيجة التحليل**\n\n`;
+      resultText += `📍 الموقع: ${location}\n`;
+      resultText += `🏷️ نوع المشروع: ${projectType}\n`;
+      resultText += `🎯 المجموعة: ${data.cluster}\n`;
+      resultText += `📈 درجة الملاءمة: ${data.suitability}\n`;
+      resultText += `⭐ النسبة: ${data.score}%\n\n`;
+      resultText += `🗺️ تم تحديث الخريطة حسب النتيجة.`;
+    } else {
+      resultText = `📊 **Analysis Result**\n\n`;
+      resultText += `📍 Location: ${location}\n`;
+      resultText += `🏷️ Project Type: ${projectType}\n`;
+      resultText += `🎯 Cluster: ${data.cluster}\n`;
+      resultText += `📈 Suitability: ${data.suitability}\n`;
+      resultText += `⭐ Score: ${data.score}%\n\n`;
+      resultText += `🗺️ Map updated based on result.`;
+    }
+    
+    addMessage("bot", resultText);
+    
+    // تحديث الخريطة بالنتيجة
+    updateMapWithResult(data, location);
+    
+  } catch (error) {
+    console.error("Analysis error:", error);
+    addMessage("bot", t(lang, "error_msg") || "Error during analysis. Make sure the server is running.");
+  }
+}
+
+// ============================================
+// تحديث الخريطة حسب نتيجة التحليل
+// ============================================
+function updateMapWithResult(data, location) {
+  const map = window.locateiqMap;
+  if (!map) return;
+  
+  // تحديد اللون حسب درجة الملاءمة
+  let color = "#ef4444"; // أحمر
+  let level = "low";
+  
+  if (data.suitability === "مناسب جداً" || data.suitability === "Highly Suitable") {
+    color = "#22c55e";
+    level = "high";
+  } else if (data.suitability === "مناسب متوسط" || data.suitability === "Moderate") {
+    color = "#facc15";
+    level = "medium";
+  }
+  
+  // إضافة نقطة جديدة على الخريطة
+  // ملاحظة: الإحداثيات حقيقية نحتاج نجيبها من قاعدة البيانات
+  // حالياً نستخدم إحداثيات تقريبية حسب المدينة
+  let lat = 18.2164, lng = 42.5053; // أبها
+  
+  if (location === "خميس مشيط") {
+    lat = 18.3000;
+    lng = 42.7333;
+  } else if (location === "أحد رفيدة") {
+    lat = 18.2000;
+    lng = 42.9500;
+  }
+  
+  const lang = getSavedLang();
+  const label = lang === "ar" 
+    ? `${data.suitability} (${data.score}%)` 
+    : `${data.suitability} (${data.score}%)`;
+  
+  L.circleMarker([lat, lng], {
+    radius: 12,
+    color: color,
+    fillColor: color,
+    fillOpacity: 0.9,
+    weight: 2
+  })
+    .addTo(map)
+    .bindPopup(`<b>${location}</b><br>${label}`);
+  
+  // تحريك الخريطة للموقع
+  map.setView([lat, lng], 10);
+}
+
+// ============================================
+// تهيئة الخريطة (Leaflet)
+// ============================================
+function initMap() {
+  const mapElement = document.getElementById("asirMap");
+  if (!mapElement || typeof L === "undefined") return;
+  
+  // إنشاء الخريطة
+  const map = L.map("asirMap").setView([18.2164, 42.5053], 9);
+  
+  // طبقة الخريطة
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(map);
+  
+  // حفظ الخريطة في متغير عام
+  window.locateiqMap = map;
+  
+  // نقاط تجريبية للمدن الرئيسية
+  const cities = [
+    { name: "أبها", nameEn: "Abha", lat: 18.2164, lng: 42.5053 },
+    { name: "خميس مشيط", nameEn: "Khamis Mushait", lat: 18.3000, lng: 42.7333 },
+    { name: "أحد رفيدة", nameEn: "Ahad Rufaidah", lat: 18.2000, lng: 42.9500 }
+  ];
+  
+  const lang = getSavedLang();
+  
+  cities.forEach(city => {
+    const cityName = lang === "ar" ? city.name : city.nameEn;
+    L.marker([city.lat, city.lng])
+      .addTo(map)
+      .bindPopup(`<b>${cityName}</b>`);
+  });
+  
+  // تحديث حجم الخريطة بعد التحميل
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 300);
+}
+
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
+  // التحقق من تسجيل الدخول
+  if (!checkAuth()) return;
+  
   // اللغة
   applyLang(getSavedLang());
-
+  
+  // تهيئة الخريطة
+  initMap();
+  
   // زر اللغة
   const langBtn = $("#langBtn");
   if (langBtn) {
@@ -165,29 +378,37 @@ document.addEventListener("DOMContentLoaded", () => {
       const next = getSavedLang() === "en" ? "ar" : "en";
       setSavedLang(next);
       applyLang(next);
+      // إعادة تهيئة الخريطة بعد تغيير اللغة
+      if (window.locateiqMap) {
+        window.locateiqMap.remove();
+      }
+      initMap();
     });
   }
-
+  
   // القائمة الجانبية
   if (menuFab) menuFab.addEventListener("click", openMenu);
   if (menuClose) menuClose.addEventListener("click", closeMenu);
   if (menuOverlay) menuOverlay.addEventListener("click", closeMenu);
-
-  // إغلاق القائمة عند الضغط على ESC
+  
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && sideMenu?.classList.contains("open")) {
       closeMenu();
     }
   });
-
+  
   // تسجيل الخروج
   const logoutBtn = $("#logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_name");
       window.location.href = "login.html";
     });
   }
-
+  
   // زر إرفاق الصور (تجريبي)
   const attachBtn = $("#attachBtn");
   if (attachBtn) {
@@ -195,103 +416,29 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(getSavedLang() === "ar" ? "سيتم إضافة خاصية رفع الصور قريبًا" : "Image upload feature coming soon");
     });
   }
-
-  // الشات
+  
+  // ============================================
+  // الشات مع ربط الباك إند
+  // ============================================
   const chatForm = $("#chatForm");
   const chatInput = $("#chatText");
   const mapOverlay = $("#mapOverlay");
-
+  
   if (chatForm) {
-    chatForm.addEventListener("submit", (e) => {
+    chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const txt = (chatInput?.value || "").trim();
       if (!txt) return;
-
+      
+      // إضافة رسالة المستخدم
       addMessage("user", txt);
       if (chatInput) chatInput.value = "";
-
+      
+      // إخفاء التراكب
       if (mapOverlay) mapOverlay.style.display = "none";
-
-      const lang = getSavedLang();
-      setTimeout(() => addMessage("bot", t(lang, "bot_reply") || "Done."), 500);
+      
+      // استدعاء دالة التحليل
+      await analyzeProject(txt);
     });
-  }
-});
-/* =============================
-   LEAFLET MAP
-   ============================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-  const mapElement = document.getElementById("asirMap");
-  if (!mapElement || typeof L === "undefined") return;
-
-  // إنشاء الخريطة
-  const map = L.map("asirMap").setView([18.2164, 42.5053], 9);
-
-  // طبقة الخريطة
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 18,
-    attribution: "&copy; OpenStreetMap contributors"
-  }).addTo(map);
-
-  // نقاط تجريبية
-  const points = [
-    {
-      name: "أبها",
-      lat: 18.2164,
-      lng: 42.5053,
-      level: "high",
-      labelAr: "مناسب جدًا",
-      labelEn: "Highly Suitable"
-    },
-    {
-      name: "خميس مشيط",
-      lat: 18.3000,
-      lng: 42.7333,
-      level: "medium",
-      labelAr: "مناسب متوسط",
-      labelEn: "Moderate Suitability"
-    },
-    {
-      name: "أحد رفيدة",
-      lat: 18.2000,
-      lng: 42.9500,
-      level: "low",
-      labelAr: "غير موصى به",
-      labelEn: "Not Recommended"
-    }
-  ];
-
-  function getColor(level) {
-    if (level === "high") return "#22c55e";
-    if (level === "medium") return "#facc15";
-    return "#ef4444";
-  }
-
-  const currentLang = getSavedLang();
-
-  points.forEach((point) => {
-    const label = currentLang === "en" ? point.labelEn : point.labelAr;
-
-    L.circleMarker([point.lat, point.lng], {
-      radius: 10,
-      color: getColor(point.level),
-      fillColor: getColor(point.level),
-      fillOpacity: 0.9,
-      weight: 2
-    })
-      .addTo(map)
-      .bindPopup(`<b>${point.name}</b><br>${label}`);
-  });
-
-  // تحديث حجم الخريطة بعد التحميل
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 300);
-
-  // إذا تبين الخريطة تظهر من البداية خليه مخفي
-  const overlay = document.getElementById("mapOverlay");
-  if (overlay) {
-    overlay.style.display = "none";
   }
 });

@@ -1,5 +1,5 @@
 /* =============================
-   LocateIQ - Profile Script (FINAL - With Forgot Password)
+   LocateIQ - Profile Script (FINAL with Backend)
    ============================= */
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -8,6 +8,30 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const LANG_KEY = "locateiq_lang";
 const getSavedLang = () => localStorage.getItem(LANG_KEY) || "ar";
 const setSavedLang = (lang) => localStorage.setItem(LANG_KEY, lang);
+
+// ============================================
+// إعدادات الباك إند
+// ============================================
+const API_BASE_URL = "http://localhost:8000";
+
+// ============================================
+// دالة جلب user_id من localStorage
+// ============================================
+function getUserId() {
+  return localStorage.getItem("user_id");
+}
+
+// ============================================
+// دالة التحقق من تسجيل الدخول
+// ============================================
+function checkAuth() {
+  const userId = getUserId();
+  if (!userId) {
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
 
 const I18N = {
   ar: {
@@ -48,6 +72,8 @@ const I18N = {
     weak_password: "كلمة المرور ضعيفة. يجب أن تحتوي على 8 أحرف على الأقل، حرف كبير، حرف صغير، رقم، ورمز",
     image_uploaded: "تم رفع الصورة بنجاح",
     image_too_large: "حجم الصورة كبير جدًا. الحد الأقصى 2MB",
+    loading_error: "حدث خطأ في تحميل البيانات",
+    saving_error: "حدث خطأ في حفظ البيانات",
     
     // Forgot Password
     modal_error: "❌ الرجاء إدخال بريدك الإلكتروني",
@@ -92,6 +118,8 @@ const I18N = {
     weak_password: "Weak password. Must be at least 8 characters with uppercase, lowercase, number, and symbol",
     image_uploaded: "Image uploaded successfully",
     image_too_large: "Image too large. Maximum size is 2MB",
+    loading_error: "Error loading data",
+    saving_error: "Error saving data",
     
     // Forgot Password
     modal_error: "❌ Please enter your email",
@@ -157,10 +185,141 @@ function isStrongPassword(pw) {
   return hasLower && hasUpper && hasDigit && hasSymbol && longEnough;
 }
 
+// ============================================
+// دالة جلب بيانات الملف الشخصي من الباك إند
+// ============================================
+async function loadProfile() {
+  const userId = getUserId();
+  const lang = getSavedLang();
+  
+  if (!userId) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/investor/profile?user_id=${userId}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // تعبئة الحقول بالبيانات المستلمة
+    const nameInput = $("#fullName");
+    const emailInput = $("#email");
+    const joinDateInput = $("#joinDate");
+    
+    if (nameInput) nameInput.value = data.name || "";
+    if (emailInput) emailInput.value = data.email || "";
+    if (joinDateInput) joinDateInput.value = data.created_at ? new Date(data.created_at).toLocaleDateString() : "";
+    
+  } catch (error) {
+    console.error("Error loading profile:", error);
+    alert(t(lang, "loading_error"));
+  }
+}
+
+// ============================================
+// دالة حفظ الملف الشخصي (إرسال للباك إند)
+// ============================================
+async function saveProfile() {
+  const userId = getUserId();
+  const lang = getSavedLang();
+  
+  if (!userId) return;
+  
+  const nameInput = $("#fullName");
+  const emailInput = $("#email");
+  
+  const profileData = {
+    name: nameInput?.value || "",
+    email: emailInput?.value || ""
+  };
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/investor/profile?user_id=${userId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(profileData)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    alert(t(lang, "profile_updated"));
+    
+  } catch (error) {
+    console.error("Error saving profile:", error);
+    alert(t(lang, "saving_error"));
+  }
+}
+
+// ============================================
+// دالة تغيير كلمة المرور (إرسال للباك إند)
+// ============================================
+async function changePassword() {
+  const userId = getUserId();
+  const lang = getSavedLang();
+  
+  if (!userId) return;
+  
+  const currentPass = $("#currentPassword");
+  const newPass = $("#newPassword");
+  const confirmPass = $("#confirmPassword");
+  
+  if (newPass.value !== confirmPass.value) {
+    alert(t(lang, "password_mismatch"));
+    return;
+  }
+  
+  if (!isStrongPassword(newPass.value)) {
+    alert(t(lang, "weak_password"));
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/investor/password?user_id=${userId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        current_password: currentPass.value,
+        new_password: newPass.value
+      })
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || "Error");
+    }
+    
+    alert(t(lang, "password_updated"));
+    
+    // مسح الحقول
+    currentPass.value = "";
+    newPass.value = "";
+    confirmPass.value = "";
+    
+  } catch (error) {
+    console.error("Error changing password:", error);
+    alert(error.message || t(lang, "saving_error"));
+  }
+}
+
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
+  // التحقق من تسجيل الدخول
+  if (!checkAuth()) return;
+  
   // اللغة
   applyLang(getSavedLang());
+  
+  // جلب بيانات الملف الشخصي
+  loadProfile();
 
   // زر اللغة
   const langBtn = $("#langBtn");
@@ -169,6 +328,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const next = getSavedLang() === "en" ? "ar" : "en";
       setSavedLang(next);
       applyLang(next);
+      // إعادة تحميل البيانات بعد تغيير اللغة
+      loadProfile();
     });
   }
 
@@ -187,11 +348,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = $("#logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_name");
       window.location.href = "login.html";
     });
   }
 
-  // رفع الصورة
+  // رفع الصورة (محاكاة - تبقى محلية)
   const avatarUpload = $("#avatarUpload");
   const avatarImg = $("#avatarImg");
 
@@ -214,43 +379,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // حفظ الملف الشخصي
+  // حفظ الملف الشخصي (مع ربط الباك إند)
   const saveProfileBtn = $("#saveProfileBtn");
   if (saveProfileBtn) {
     saveProfileBtn.addEventListener("click", () => {
-      alert(t(getSavedLang(), "profile_updated"));
+      saveProfile();
     });
   }
 
-  // تغيير كلمة المرور
+  // تغيير كلمة المرور (مع ربط الباك إند)
   const changePasswordBtn = $("#changePasswordBtn");
-  const currentPass = $("#currentPassword");
-  const newPass = $("#newPassword");
-  const confirmPass = $("#confirmPassword");
-
   if (changePasswordBtn) {
     changePasswordBtn.addEventListener("click", () => {
-      const lang = getSavedLang();
-
-      if (newPass.value !== confirmPass.value) {
-        alert(t(lang, "password_mismatch"));
-        return;
-      }
-
-      if (!isStrongPassword(newPass.value)) {
-        alert(t(lang, "weak_password"));
-        return;
-      }
-
-      alert(t(lang, "password_updated"));
-      
-      if (currentPass) currentPass.value = "";
-      if (newPass) newPass.value = "";
-      if (confirmPass) confirmPass.value = "";
+      changePassword();
     });
   }
 
-  // ===== Forgot Password in Profile Page (داخل DOMContentLoaded) =====
+  // ===== Forgot Password in Profile Page =====
   const forgotProfileLink = document.getElementById("forgotPasswordProfile");
   const modal = document.getElementById("forgotModal");
   const closeModalBtn = document.querySelector(".close-modal");
@@ -285,7 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   if (sendResetBtn) {
-    sendResetBtn.onclick = function() {
+    sendResetBtn.onclick = async function() {
       const email = resetEmail.value.trim();
       const lang = getSavedLang();
       
@@ -295,9 +440,28 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       
-      modalMessage.innerHTML = I18N[lang].modal_success;
-      modalMessage.style.color = "#2ee59d";
-      resetEmail.value = "";
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        
+        const data = await response.json();
+        
+        modalMessage.innerHTML = data.message || I18N[lang].modal_success;
+        modalMessage.style.color = "#2ee59d";
+        resetEmail.value = "";
+        
+        setTimeout(() => {
+          modal.style.display = "none";
+          modalMessage.innerHTML = "";
+        }, 3000);
+        
+      } catch (error) {
+        modalMessage.innerHTML = I18N[lang].modal_error;
+        modalMessage.style.color = "#ff4b4b";
+      }
     };
   }
 });

@@ -1,5 +1,5 @@
 /* =============================
-   LocateIQ - Admin Panel (FINAL - COMPLETE)
+   LocateIQ - Admin Panel (FINAL with Backend)
    ============================= */
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -9,16 +9,26 @@ const LANG_KEY = "locateiq_lang";
 const getSavedLang = () => localStorage.getItem(LANG_KEY) || "ar";
 const setSavedLang = (lang) => localStorage.setItem(LANG_KEY, lang);
 
-// الترجمة الكاملة لجميع الصفحات
+// ============================================
+// إعدادات الباك إند
+// ============================================
+const API_BASE_URL = "http://localhost:8000";
+
+// ============================================
+// دالة جلب user_id من localStorage
+// ============================================
+function getUserId() {
+  return localStorage.getItem("user_id");
+}
+
+// الترجمة الكاملة
 const I18N = {
   ar: {
-    // العناوين الرئيسية
     admin_title: "LocateIQ | لوحة تحكم الأدمن",
     users_title: "LocateIQ | إدارة المستخدمين",
     data_title: "LocateIQ | إدارة البيانات",
     settings_title: "LocateIQ | إعدادات النظام",
     
-    // القائمة الجانبية
     home: "الرئيسية",
     users: "المستخدمين",
     data: "البيانات",
@@ -28,7 +38,6 @@ const I18N = {
     logout: "تسجيل الخروج",
     admin_role: "مدير النظام",
     
-    // رأس الصفحات
     admin_dashboard_title: "لوحة تحكم الأدمن",
     admin_dashboard_sub: "مرحباً بك في لوحة التحكم، يمكنك إدارة النظام والإشراف على المستخدمين",
     
@@ -36,12 +45,10 @@ const I18N = {
     data_sub: "إضافة وتعديل المناطق، المؤشرات، والبيانات الجغرافية",
     settings_sub: "تخصيص إعدادات المنصة والتحكم بالمعايير",
     
-    // إحصائيات
     total_users: "إجمالي المستخدمين",
     total_analyses: "إجمالي التحليلات",
     active_now: "نشط الآن",
     
-    // جداول المستخدمين
     id: "#",
     name: "الاسم",
     email: "البريد",
@@ -57,126 +64,27 @@ const I18N = {
     delete: "حذف",
     view: "عرض",
     
-    // بحث وإضافة
     search_users: "بحث عن مستخدم...",
     add_user: "إضافة مستخدم",
     
-    // جداول البيانات
-    region_name: "اسم المنطقة",
-    city: "المدينة",
-    area: "المساحة",
-    population: "الكثافة السكانية",
-    indicators_count: "عدد المؤشرات",
-    add_region: "إضافة منطقة",
-    search_region: "بحث عن منطقة...",
-    
-    indicator_name: "اسم المؤشر",
-    type: "النوع",
-    value: "القيمة",
-    region: "المنطقة",
-    last_updated: "آخر تحديث",
-    add_indicator: "إضافة مؤشر",
-    search_indicator: "بحث عن مؤشر...",
-    
-    // نقاط الاهتمام
-    point_name: "اسم النقطة",
-    coordinates: "الإحداثيات",
-    add_point: "إضافة نقطة",
-    search_points: "بحث عن نقاط...",
-    
-    // أنواع المؤشرات والنقاط
-    demographic: "ديموغرافي",
-    economic: "اقتصادي",
-    health: "صحي",
-    educational: "تعليمي",
-    hospital: "مستشفى",
-    school: "مدرسة",
-    
-    // أسماء المؤشرات
-    population_indicator: "الكثافة السكانية",
-    competitors_indicator: "عدد المنافسين",
-    
-    // أسماء المدن والمناطق
-    abha: "أبها",
-    khamis_mushait: "خميس مشيط",
-    ahad_rufaidah: "أحد رفيدة",
-    al_namis: "النميص",
-    al_khalidiyah: "الخالدية",
-    al_dabab: "الضباب",
-    plan_6: "المخطط 6",
-    
-    // تبويبات البيانات
-    regions: "المناطق",
-    indicators: "المؤشرات",
-    points: "نقاط الاهتمام",
-    import: "استيراد",
-    
-    // معاينة الخريطة
-    map_preview: "معاينة الخريطة",
-    map_click_hint: "انقر على منطقة لعرض التفاصيل",
-    
-    // استيراد
-    import_data: "استيراد البيانات",
-    drag_drop: "اسحب وأفلت الملف هنا أو",
-    browse: "استعرض",
-    import_hint: "يدعم: CSV, JSON, GeoJSON",
-    
-    // إعدادات
-    general_settings: "الإعدادات العامة",
-    analysis_settings: "إعدادات التحليل",
-    data_settings: "إعدادات البيانات",
-    map_settings: "إعدادات الخريطة",
-    site_name: "اسم الموقع",
-    site_url: "رابط الموقع",
-    admin_email: "بريد الأدمن",
-    maintenance_mode: "وضع الصيانة",
-    on: "مفعل",
-    off: "معطل",
-    ml_model: "نموذج الذكاء الاصطناعي",
-    clusters: "عدد المجموعات",
-    confidence: "حد الثقة",
-    data_source: "مصدر البيانات",
-    update_frequency: "تحديث البيانات",
-    daily: "يوميًا",
-    weekly: "أسبوعيًا",
-    monthly: "شهريًا",
-    map_style: "نمط الخريطة",
-    streets: "شوارع",
-    satellite: "قمر صناعي",
-    terrain: "تضاريس",
-    default_zoom: "التكبير الافتراضي",
-    show_clusters: "عرض المجموعات",
-    save_settings: "حفظ الإعدادات",
-    
-    // نماذج AI
-    kmeans: "K-Means",
-    dbscan: "DBSCAN",
-    hierarchical: "Hierarchical",
-    
-    // مصادر البيانات
-    local: "محلي",
-    api: "API",
-    database: "قاعدة بيانات",
-    
-    // الفوتر
-    footer_rights: "جميع الحقوق محفوظة",
-    
     // رسائل
+    loading_error: "حدث خطأ في تحميل البيانات",
+    delete_confirm: "هل أنت متأكد من حذف هذا المستخدم؟",
+    delete_success: "تم حذف المستخدم بنجاح",
+    delete_error: "حدث خطأ في حذف المستخدم",
+    
+    footer_rights: "جميع الحقوق محفوظة",
     vs_code_opening: "جاري فتح المشروع في VS Code...",
     vs_code_error: "تعذر فتح VS Code. تأكدي من تثبيته والمسار الصحيح.",
-    
-    // التوب بار
     nav_home: "الرئيسية"
   },
   
   en: {
-    // Main Titles
     admin_title: "LocateIQ | Admin Dashboard",
     users_title: "LocateIQ | Users Management",
     data_title: "LocateIQ | Data Management",
     settings_title: "LocateIQ | System Settings",
     
-    // Sidebar
     home: "Home",
     users: "Users",
     data: "Data",
@@ -186,7 +94,6 @@ const I18N = {
     logout: "Logout",
     admin_role: "System Admin",
     
-    // Page Headers
     admin_dashboard_title: "Admin Dashboard",
     admin_dashboard_sub: "Welcome to the admin panel, you can manage the system and oversee users",
     
@@ -194,12 +101,10 @@ const I18N = {
     data_sub: "Add and edit regions, indicators, and geographic data",
     settings_sub: "Customize platform settings and control parameters",
     
-    // Stats
     total_users: "Total Users",
     total_analyses: "Total Analyses",
     active_now: "Active Now",
     
-    // Users Table
     id: "#",
     name: "Name",
     email: "Email",
@@ -215,115 +120,18 @@ const I18N = {
     delete: "Delete",
     view: "View",
     
-    // Search and Add
     search_users: "Search users...",
     add_user: "Add User",
     
-    // Data Tables
-    region_name: "Region Name",
-    city: "City",
-    area: "Area",
-    population: "Population Density",
-    indicators_count: "Indicators Count",
-    add_region: "Add Region",
-    search_region: "Search region...",
-    
-    indicator_name: "Indicator Name",
-    type: "Type",
-    value: "Value",
-    region: "Region",
-    last_updated: "Last Updated",
-    add_indicator: "Add Indicator",
-    search_indicator: "Search indicator...",
-    
-    // Points of Interest
-    point_name: "Point Name",
-    coordinates: "Coordinates",
-    add_point: "Add Point",
-    search_points: "Search points...",
-    
-    // Indicator and Point Types
-    demographic: "Demographic",
-    economic: "Economic",
-    health: "Health",
-    educational: "Educational",
-    hospital: "Hospital",
-    school: "School",
-    
-    // Indicator Names
-    population_indicator: "Population Density",
-    competitors_indicator: "Competitors Count",
-    
-    // City and Region Names
-    abha: "Abha",
-    khamis_mushait: "Khamis Mushait",
-    ahad_rufaidah: "Ahad Rufaidah",
-    al_namis: "Al Namis",
-    al_khalidiyah: "Al Khalidiyah",
-    al_dabab: "Al Dabab",
-    plan_6: "Plan 6",
-    
-    // Data Tabs
-    regions: "Regions",
-    indicators: "Indicators",
-    points: "Points of Interest",
-    import: "Import",
-    
-    // Map Preview
-    map_preview: "Map Preview",
-    map_click_hint: "Click on a region to view details",
-    
-    // Import
-    import_data: "Import Data",
-    drag_drop: "Drag and drop file here or",
-    browse: "Browse",
-    import_hint: "Supports: CSV, JSON, GeoJSON",
-    
-    // Settings
-    general_settings: "General Settings",
-    analysis_settings: "Analysis Settings",
-    data_settings: "Data Settings",
-    map_settings: "Map Settings",
-    site_name: "Site Name",
-    site_url: "Site URL",
-    admin_email: "Admin Email",
-    maintenance_mode: "Maintenance Mode",
-    on: "On",
-    off: "Off",
-    ml_model: "AI Model",
-    clusters: "Number of Clusters",
-    confidence: "Confidence Threshold",
-    data_source: "Data Source",
-    update_frequency: "Update Frequency",
-    daily: "Daily",
-    weekly: "Weekly",
-    monthly: "Monthly",
-    map_style: "Map Style",
-    streets: "Streets",
-    satellite: "Satellite",
-    terrain: "Terrain",
-    default_zoom: "Default Zoom",
-    show_clusters: "Show Clusters",
-    save_settings: "Save Settings",
-    
-    // AI Models
-    kmeans: "K-Means",
-    dbscan: "DBSCAN",
-    hierarchical: "Hierarchical",
-    
-    // Data Sources
-    local: "Local",
-    api: "API",
-    database: "Database",
-    
-    // Footer
-    footer_rights: "All rights reserved",
-    
     // Messages
+    loading_error: "Error loading data",
+    delete_confirm: "Are you sure you want to delete this user?",
+    delete_success: "User deleted successfully",
+    delete_error: "Error deleting user",
+    
+    footer_rights: "All rights reserved",
     vs_code_opening: "Opening project in VS Code...",
     vs_code_error: "Could not open VS Code. Make sure it is installed and the path is correct.",
-    
-    // Topbar
     nav_home: "Home"
   }
 };
@@ -340,18 +148,194 @@ function checkAdminAccess() {
   return true;
 }
 
-// تحديث اللغة في كل العناصر
+// ============================================
+// تحديث الإحصائيات من الباك إند
+// ============================================
+async function updateStats() {
+  const lang = getSavedLang();
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/stats`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const stats = await response.json();
+    
+    const totalUsers = $("#totalUsers");
+    const totalAnalyses = $("#totalAnalyses");
+    const activeNow = $("#activeNow");
+    
+    if (totalUsers) totalUsers.textContent = stats.total_users || "0";
+    if (totalAnalyses) totalAnalyses.textContent = stats.total_analyses || "0";
+    if (activeNow) activeNow.textContent = stats.active_now || "0";
+    
+  } catch (error) {
+    console.error("Error loading stats:", error);
+    // عرض أصفار في حالة الخطأ
+    const totalUsers = $("#totalUsers");
+    const totalAnalyses = $("#totalAnalyses");
+    const activeNow = $("#activeNow");
+    
+    if (totalUsers) totalUsers.textContent = "0";
+    if (totalAnalyses) totalAnalyses.textContent = "0";
+    if (activeNow) activeNow.textContent = "0";
+  }
+}
+
+// ============================================
+// جلب قائمة المستخدمين من الباك إند
+// ============================================
+async function loadUsers() {
+  const lang = getSavedLang();
+  const tbody = $("#usersTableBody");
+  
+  if (!tbody) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/users`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const users = await response.json();
+    
+    if (!users || users.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>${lang === "ar" ? "لا يوجد مستخدمين بعد" : "No users yet"}</p>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    renderUsersTable(users);
+    
+  } catch (error) {
+    console.error("Error loading users:", error);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">
+          <div class="empty-icon">⚠️</div>
+          <p>${lang === "ar" ? "حدث خطأ في تحميل البيانات" : "Error loading data"}</p>
+        </td>
+      </tr>
+    `;
+  }
+}
+
+// ============================================
+// عرض المستخدمين في الجدول
+// ============================================
+function renderUsersTable(users) {
+  const tbody = $("#usersTableBody");
+  const lang = getSavedLang();
+  const isAr = lang === "ar";
+  
+  if (!tbody) return;
+  
+  let html = "";
+  
+  users.forEach(user => {
+    const statusClass = user.status === "active" ? "active" : "inactive";
+    const statusText = user.status === "active" 
+      ? (isAr ? "نشط" : "Active") 
+      : (isAr ? "غير نشط" : "Inactive");
+    
+    const roleText = user.role === "admin" 
+      ? (isAr ? "أدمن" : "Admin") 
+      : (isAr ? "مستخدم" : "User");
+    
+    const date = user.created_at ? new Date(user.created_at).toLocaleDateString(isAr ? "ar-SA" : "en-US") : "-";
+    
+    html += `
+      <tr data-user-id="${user.id}">
+        <td>${user.id}</td>
+        <td>${user.name || "-"}</td>
+        <td>${user.email || "-"}</td>
+        <td><span class="role-badge ${user.role === "admin" ? "admin" : "user"}">${roleText}</span></td>
+        <td>${date}</td>
+        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+        <td>
+          <button class="action-btn edit-user" data-id="${user.id}">
+            <span>✏️</span> ${isAr ? "تعديل" : "Edit"}
+          </button>
+          <button class="action-btn delete-user" data-id="${user.id}">
+            <span>🗑️</span> ${isAr ? "حذف" : "Delete"}
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+  
+  // ربط أحداث الأزرار
+  bindUserButtons();
+}
+
+// ============================================
+// ربط أحداث أزرار المستخدمين
+// ============================================
+function bindUserButtons() {
+  const lang = getSavedLang();
+  
+  // أزرار التعديل
+  $$(".edit-user").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const id = e.currentTarget.dataset.id;
+      alert(lang === "ar" ? `تعديل المستخدم ${id} (محاكاة)` : `Edit user ${id} (demo)`);
+    });
+  });
+  
+  // أزرار الحذف (مع ربط الباك إند)
+  $$(".delete-user").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const userId = e.currentTarget.dataset.id;
+      
+      if (confirm(lang === "ar" ? "هل أنت متأكد من حذف هذا المستخدم؟" : "Are you sure you want to delete this user?")) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+            method: "DELETE"
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          
+          alert(lang === "ar" ? "تم حذف المستخدم بنجاح" : "User deleted successfully");
+          
+          // إعادة تحميل القائمة
+          loadUsers();
+          
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          alert(lang === "ar" ? "حدث خطأ في حذف المستخدم" : "Error deleting user");
+        }
+      }
+    });
+  });
+}
+
+// ============================================
+// تحديث اللغة
+// ============================================
 function applyLanguage(lang) {
   const isAr = lang === "ar";
   
   document.documentElement.lang = isAr ? "ar" : "en";
   document.documentElement.dir = isAr ? "rtl" : "ltr";
   
-  // تحديث زر اللغة
   const langText = $("#langText");
   if (langText) langText.textContent = isAr ? "English" : "العربية";
   
-  // تحديث كل العناصر اللي فيها data-i18n
   $$("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
     if (I18N[lang][key]) {
@@ -359,7 +343,6 @@ function applyLanguage(lang) {
     }
   });
   
-  // تحديث الـ placeholders
   $$("[data-i18n-placeholder]").forEach(el => {
     const key = el.getAttribute("data-i18n-placeholder");
     if (I18N[lang][key]) {
@@ -367,28 +350,12 @@ function applyLanguage(lang) {
     }
   });
   
-  // تحديث عنوان الصفحة
   const titleKey = document.querySelector("title")?.getAttribute("data-i18n");
   if (titleKey && I18N[lang][titleKey]) {
     document.title = I18N[lang][titleKey];
   }
   
-  // تحديث الـ options في الـ select
-  $$("option[data-i18n]").forEach(option => {
-    const key = option.getAttribute("data-i18n");
-    if (I18N[lang][key]) {
-      option.textContent = I18N[lang][key];
-    }
-  });
-  
-  // تحديث المحتوى الديناميكي (badges, roles, etc)
-  updateDynamicContent(lang);
-}
-
-// تحديث المحتوى الديناميكي
-function updateDynamicContent(lang) {
-  const isAr = lang === "ar";
-  
+  // تحديث المحتوى الديناميكي
   $$(".role-badge.admin").forEach(badge => {
     badge.textContent = isAr ? "أدمن" : "Admin";
   });
@@ -406,34 +373,22 @@ function updateDynamicContent(lang) {
   });
 }
 
-// تحديث الإحصائيات
-function updateStats() {
-  const totalUsers = $("#totalUsers");
-  const totalAnalyses = $("#totalAnalyses");
-  const activeNow = $("#activeNow");
-
-  if (totalUsers) totalUsers.textContent = "0";
-  if (totalAnalyses) totalAnalyses.textContent = "0";
-  if (activeNow) activeNow.textContent = "0";
-}
-
-// ربط الأحداث
+// ============================================
+// ربط الأحداث العامة
+// ============================================
 function bindEvents() {
   // زر تخصيص المظهر
   $("#themeCustomizer")?.addEventListener("click", (e) => {
     e.preventDefault();
     const lang = getSavedLang();
     
-   try {
-    // استخدمي encodeURIComponent عشان ترميز المسار
-    const projectPath = encodeURIComponent('C:\\Users\\jf645\\OneDrive\\سطح المكتب\\Frontend');
-    
-    window.location.href = `vscode://file/${projectPath}`;
-    
-    alert(I18N[lang].vs_code_opening);
-} catch (error) {
-    alert(I18N[lang].vs_code_error);
-}
+    try {
+      const projectPath = encodeURIComponent('C:\\Users\\jf645\\OneDrive\\سطح المكتب\\Frontend');
+      window.location.href = `vscode://file/${projectPath}`;
+      alert(I18N[lang].vs_code_opening);
+    } catch (error) {
+      alert(I18N[lang].vs_code_error);
+    }
   });
 
   // تسجيل الخروج
@@ -443,19 +398,26 @@ function bindEvents() {
     localStorage.removeItem("user_role");
     localStorage.removeItem("user_email");
     localStorage.removeItem("user_name");
+    localStorage.removeItem("user_id");
     window.location.href = "login.html";
   });
 }
 
+// ============================================
 // تهيئة الصفحة
+// ============================================
 document.addEventListener("DOMContentLoaded", () => {
   if (!checkAdminAccess()) return;
 
   const savedLang = getSavedLang();
   applyLanguage(savedLang);
 
-  if (document.getElementById("totalUsers")) {
-    updateStats();
+  // تحديث الإحصائيات
+  updateStats();
+  
+  // تحميل قائمة المستخدمين (إذا كانت الصفحة admin-users.html)
+  if (document.getElementById("usersTableBody")) {
+    loadUsers();
   }
 
   bindEvents();
@@ -464,5 +426,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const next = getSavedLang() === "en" ? "ar" : "en";
     setSavedLang(next);
     applyLanguage(next);
+    // إعادة تحميل البيانات بعد تغيير اللغة
+    updateStats();
+    if (document.getElementById("usersTableBody")) {
+      loadUsers();
+    }
   });
-});     
+});

@@ -1,5 +1,5 @@
 /* =============================
-   LocateIQ - Past Results Script (FINAL - No Mock Data)
+   LocateIQ - Past Results Script (FINAL with Backend)
    ============================= */
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -8,6 +8,30 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const LANG_KEY = "locateiq_lang";
 const getSavedLang = () => localStorage.getItem(LANG_KEY) || "ar";
 const setSavedLang = (lang) => localStorage.setItem(LANG_KEY, lang);
+
+// ============================================
+// إعدادات الباك إند
+// ============================================
+const API_BASE_URL = "http://localhost:8000";
+
+// ============================================
+// دالة جلب user_id من localStorage
+// ============================================
+function getUserId() {
+  return localStorage.getItem("user_id");
+}
+
+// ============================================
+// دالة التحقق من تسجيل الدخول
+// ============================================
+function checkAuth() {
+  const userId = getUserId();
+  if (!userId) {
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
 
 const I18N = {
   ar: {
@@ -37,6 +61,7 @@ const I18N = {
     no_results: "لا توجد نتائج سابقة بعد. قم بتحليل مشروعك الأول!",
     welcome_title: "مرحباً بك في عالم التحليلات!",
     start_analysis: "🚀 ابدأ التحليل الآن",
+    loading_error: "حدث خطأ في تحميل البيانات",
     
     footer_rights: "جميع الحقوق محفوظة"
   },
@@ -68,6 +93,7 @@ const I18N = {
     no_results: "No past results yet. Start by analyzing your first project!",
     welcome_title: "Welcome to the world of analytics!",
     start_analysis: "🚀 Start Analyzing Now",
+    loading_error: "Error loading data",
     
     footer_rights: "All rights reserved"
   }
@@ -105,7 +131,6 @@ function applyLang(lang) {
   if (langText) langText.textContent = isEnglish ? "العربية" : "English";
 
   applyI18nToDom(lang);
-  renderEmptyState(); // رسم الحالة الفارغة
 }
 
 // ===== SIDE MENU =====
@@ -128,14 +153,140 @@ function closeMenu() {
   document.body.classList.remove("menu-open");
 }
 
-// ===== RENDER EMPTY STATE (مؤقتًا - بدون نتائج وهمية) =====
+// ============================================
+// دالة جلب التحليلات السابقة من الباك إند
+// ============================================
+async function loadHistory() {
+  const userId = getUserId();
+  const lang = getSavedLang();
+  const grid = $("#resultsGrid");
+  
+  if (!userId) return;
+  if (!grid) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/investor/history?user_id=${userId}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const analyses = await response.json();
+    
+    if (!analyses || analyses.length === 0) {
+      renderEmptyState();
+      return;
+    }
+    
+    renderResults(analyses);
+    
+  } catch (error) {
+    console.error("Error loading history:", error);
+    grid.innerHTML = `
+      <div class="no-results">
+        <div style="font-size: 4rem; margin-bottom: 20px;">⚠️</div>
+        <div style="font-size: 1.2rem; color: var(--orange); margin-bottom: 10px;">
+          ${t(lang, "loading_error")}
+        </div>
+        <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 20px;">
+          🔄 ${lang === "ar" ? "إعادة المحاولة" : "Retry"}
+        </button>
+      </div>
+    `;
+  }
+}
+
+// ============================================
+// عرض النتائج في الجدول
+// ============================================
+function renderResults(analyses) {
+  const grid = $("#resultsGrid");
+  const lang = getSavedLang();
+  
+  if (!grid) return;
+  
+  // ترتيب حسب التاريخ (الأحدث أولاً)
+  const sorted = [...analyses].sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  let html = '<div class="results-list">';
+  
+  sorted.forEach(analysis => {
+    // تحديد درجة الملاءمة
+    let suitabilityClass = "badge-low";
+    let suitabilityText = "";
+    
+    if (analysis.cluster <= 10) {
+      suitabilityClass = "badge-high";
+      suitabilityText = lang === "ar" ? "مناسب جداً" : "Highly Suitable";
+    } else if (analysis.cluster <= 20) {
+      suitabilityClass = "badge-medium";
+      suitabilityText = lang === "ar" ? "مناسب متوسط" : "Moderate";
+    } else {
+      suitabilityClass = "badge-low";
+      suitabilityText = lang === "ar" ? "غير موصى به" : "Not Recommended";
+    }
+    
+    const date = new Date(analysis.date).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US");
+    const locationLabel = t(lang, "location_label");
+    const dateLabel = t(lang, "date_label");
+    const viewDetails = t(lang, "view_details");
+    const viewMap = t(lang, "view_map");
+    
+    html += `
+      <div class="result-card" data-id="${analysis.id}">
+        <div class="result-info">
+          <div class="result-title">${analysis.project_name}</div>
+          <div class="result-meta">
+            <span><span class="meta-ic">📍</span> ${locationLabel}: ${analysis.location}</span>
+            <span><span class="meta-ic">📅</span> ${dateLabel}: ${date}</span>
+            <span><span class="meta-ic">🎯</span> ${lang === "ar" ? "المجموعة" : "Cluster"}: ${analysis.cluster}</span>
+          </div>
+        </div>
+        <div class="result-badge ${suitabilityClass}">
+          <span>●</span>
+          <span>${suitabilityText}</span>
+        </div>
+        <div class="result-actions">
+          <button class="result-btn view-details" data-id="${analysis.id}">
+            <span>🔍</span>
+            <span>${viewDetails}</span>
+          </button>
+          <button class="result-btn view-map" data-id="${analysis.id}" data-location="${analysis.location}">
+            <span>🗺️</span>
+            <span>${viewMap}</span>
+          </button>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  grid.innerHTML = html;
+  
+  // إضافة event listeners للأزرار
+  $$(".view-details").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const id = e.currentTarget.dataset.id;
+      alert(lang === "ar" ? `عرض تفاصيل التحليل رقم ${id}` : `View details for analysis #${id}`);
+    });
+  });
+  
+  $$(".view-map").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const location = e.currentTarget.dataset.location;
+      window.location.href = `dashboard.html?location=${encodeURIComponent(location)}`;
+    });
+  });
+}
+
+// ============================================
+// عرض الحالة الفارغة (عند عدم وجود نتائج)
+// ============================================
 function renderEmptyState() {
   const grid = $("#resultsGrid");
   if (!grid) return;
 
   const lang = getSavedLang();
-  const isAr = lang === "ar";
-
   const message = t(lang, "no_results");
   const welcome = t(lang, "welcome_title");
   const startBtn = t(lang, "start_analysis");
@@ -158,8 +309,14 @@ function renderEmptyState() {
 
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
+  // التحقق من تسجيل الدخول
+  if (!checkAuth()) return;
+  
   // اللغة
   applyLang(getSavedLang());
+
+  // جلب التحليلات السابقة
+  loadHistory();
 
   // زر اللغة
   const langBtn = $("#langBtn");
@@ -168,6 +325,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const next = getSavedLang() === "en" ? "ar" : "en";
       setSavedLang(next);
       applyLang(next);
+      // إعادة تحميل البيانات بعد تغيير اللغة
+      loadHistory();
     });
   }
 
@@ -186,17 +345,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = $("#logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_role");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("user_name");
       window.location.href = "login.html";
     });
   }
 
-  // الفلاتر (مخفية مؤقتًا)
+  // الفلاتر (للتحميل مستقبلاً)
   $$(".filter-btn").forEach(btn => {
     btn.addEventListener("click", (e) => {
-      // لا تفعل شيء الآن
+      const filter = e.currentTarget.dataset.filter;
+      console.log("Filter clicked:", filter);
+      // TODO: إضافة فلترة للنتائج
     });
   });
-
-  // رسم الحالة الفارغة
-  renderEmptyState();
 });
