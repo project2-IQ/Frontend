@@ -12,7 +12,7 @@ const setSavedLang = (lang) => localStorage.setItem(LANG_KEY, lang);
 // ============================================
 // إعدادات الباك إند
 // ============================================
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://192.168.8.69:8000";
 
 // ============================================
 // دالة جلب user_id من localStorage

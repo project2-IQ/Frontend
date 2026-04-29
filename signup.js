@@ -1,5 +1,5 @@
-// signup.js
-document.addEventListener("DOMContentLoaded", () => {
+// signup.js - النسخة النهائية المضمونة
+document.addEventListener("DOMContent_AR", () => {
   const LANG_KEY = "locateiq_lang";
 
   // Elements
@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const langText = document.getElementById("langText");
 
   const createText = document.getElementById("createText");
-  const title = document.getElementById("title");
   const subtitle = document.getElementById("subtitle");
   const homeLink = document.getElementById("homeLink");
 
@@ -29,6 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const form = document.getElementById("signupForm");
 
+  // ============================================
+  // ✅ الرابط الثابت والمضمون للسيرفر
+  // ============================================
+  const API_BASE_URL = "http://192.168.8.69:8000";
+
   const I18N = {
     ar: {
       lang_btn: "English",
@@ -44,10 +48,16 @@ document.addEventListener("DOMContentLoaded", () => {
       pass_ph: "أدخل كلمة المرور",
       confirm_ph: "أعد إدخال كلمة المرور",
       pass_rules: "يجب أن تحتوي كلمة المرور على: 8 أحرف على الأقل، حرف كبير، حرف صغير، رقم، ورمز.",
-      create_btn: "إنشاء حساب →",
+      create_btn: "إنشاء حساب",
       have_account: "لديك حساب؟",
       login_link: "سجّل الدخول",
-      footer_rights: "جميع الحقوق محفوظة"
+      footer_rights: "جميع الحقوق محفوظة",
+      email_exists: "❌ هذا البريد الإلكتروني مسجل مسبقاً",
+      signup_error: "❌ حدث خطأ أثناء إنشاء الحساب",
+      server_error: "❌ تعذر الاتصال بالخادم. تأكد من تشغيل الباك إند",
+      weak_password: "كلمة المرور غير قوية.",
+      password_mismatch: "كلمتا المرور غير متطابقتين",
+      signup_success: "✅ تم إنشاء الحساب بنجاح!"
     },
     en: {
       lang_btn: "العربية",
@@ -62,11 +72,17 @@ document.addEventListener("DOMContentLoaded", () => {
       email_ph: "Enter your email",
       pass_ph: "Enter your password",
       confirm_ph: "Re-enter your password",
-      pass_rules: "Password must include: at least 8 characters, uppercase, lowercase, a number, and a symbol.",
-      create_btn: "Create Account →",
+      pass_rules: "Password: 8+ chars, uppercase, lowercase, number, symbol.",
+      create_btn: "Create Account",
       have_account: "Already have an account?",
       login_link: "Sign In",
-      footer_rights: "All rights reserved"
+      footer_rights: "All rights reserved",
+      email_exists: "❌ This email is already registered",
+      signup_error: "❌ An error occurred",
+      server_error: "❌ Cannot connect to server.",
+      weak_password: "Weak password.",
+      password_mismatch: "Passwords do not match",
+      signup_success: "✅ Account created!"
     }
   };
 
@@ -87,10 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.documentElement.lang = isEnglish ? "en" : "ar";
     document.documentElement.dir  = isEnglish ? "ltr" : "rtl";
 
-    // زر اللغة
     if (langText) langText.textContent = I18N[lang].lang_btn;
-
-    // نصوص الصفحة
     if (homeLink) homeLink.textContent = I18N[lang].home;
     if (createText) createText.textContent = I18N[lang].create;
     if (subtitle) subtitle.textContent = I18N[lang].subtitle;
@@ -109,10 +122,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (footerRights) footerRights.textContent = I18N[lang].footer_rights;
   }
 
-  // Initialize
   applyLang(getSavedLang());
 
-  // Language toggle
   if (langBtn) {
     langBtn.addEventListener("click", () => {
       const next = getSavedLang() === "en" ? "ar" : "en";
@@ -121,34 +132,72 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Form validation
   if (form) {
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const currentLang = getSavedLang();
-      const isArabic = currentLang === "ar";
 
-      // تحقق قوة الباسورد
-      if (!isStrongPassword(password.value)) {
-        alert(
-          isArabic
-            ? "كلمة المرور غير قوية. يجب أن تحتوي على 8 أحرف على الأقل، حرف كبير، حرف صغير، رقم، ورمز."
-            : "Weak password. It must be 8+ chars and include uppercase, lowercase, a number, and a symbol."
-        );
+      const nameValue = fullName.value.trim();
+      const emailValue = email.value.trim();
+      const passwordValue = password.value;
+      const confirmPasswordValue = confirmPassword.value;
+
+      if (!isStrongPassword(passwordValue)) {
+        alert(I18N[currentLang].weak_password);
         password.focus();
         return;
       }
 
-      // تطابق الباسورد
-      if (password.value !== confirmPassword.value) {
-        alert(isArabic ? "كلمتا المرور غير متطابقتين" : "Passwords do not match");
+      if (passwordValue !== confirmPasswordValue) {
+        alert(I18N[currentLang].password_mismatch);
         confirmPassword.focus();
         return;
       }
 
-      // إذا كل شيء تمام، نوجه للداشبورد
-      window.location.href = "dashboard.html";
+      if (!nameValue || !emailValue) {
+        alert("Please fill all fields");
+        return;
+      }
+
+      createBtn.disabled = true;
+      createBtn.textContent = "جاري الإنشاء...";
+
+      try {
+        // ✅ هنا الرابط الصحيح للتسجيل
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            name: nameValue,
+            email: emailValue, 
+            password: passwordValue 
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert(I18N[currentLang].signup_success);
+          localStorage.setItem("is_logged_in", "true");
+          localStorage.setItem("user_email", emailValue);
+          localStorage.setItem("user_name", nameValue);
+          localStorage.setItem("user_id", data.userID);
+          window.location.href = "dashboard.html";
+        } else {
+          if (response.status === 400) {
+            alert(I18N[currentLang].email_exists);
+          } else {
+            alert(data.detail || I18N[currentLang].signup_error);
+          }
+        }
+      } catch (error) {
+        console.error("Signup error:", error);
+        alert(I18N[currentLang].server_error);
+      } finally {
+        createBtn.disabled = false;
+        createBtn.textContent = I18N[currentLang].create_btn;
+      }
     });
   }
 });

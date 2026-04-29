@@ -1,4 +1,4 @@
-// login.js (FINAL - مع اتجاه ثابت)
+// login.js (FINAL - مع اتجاه ثابت + ربط الباك إند عبر الشبكة)
 document.addEventListener("DOMContentLoaded", () => {
   const LANG_KEY = "locateiq_lang";
 
@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const sendResetBtn = document.getElementById("sendResetBtn");
   const resetEmail = document.getElementById("resetEmail");
   const modalMessage = document.getElementById("modalMessage");
+
+  // ✅ عنوان الباك إند (يُستخدم في كل الطلبات)
+  const API_BASE_URL = "http://192.168.8.69:8000";
 
   const I18N = {
     ar: {
@@ -81,12 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function applyLang(lang) {
     const isEnglish = lang === "en";
     
-    // ✅ تغيير اتجاه الصفحة أول شيء
     document.documentElement.setAttribute("dir", isEnglish ? "ltr" : "rtl");
     document.documentElement.setAttribute("lang", isEnglish ? "en" : "ar");
     document.body.style.direction = isEnglish ? "ltr" : "rtl";
     
-    // تأكيد أن الـ dir تغير
     console.log("Language changed to:", lang, "dir:", document.documentElement.dir);
 
     if (langText) langText.textContent = I18N[lang].lang_btn;
@@ -113,14 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modalBtn) modalBtn.textContent = I18N[lang].modal_btn;
     if (resetEmailInput) resetEmailInput.placeholder = I18N[lang].reset_email_ph;
     
-    // ترجمة رابط "نسيت كلمة المرور"
     if (forgotLink) forgotLink.textContent = I18N[lang].forgot_password;
   }
 
-  // تطبيق اللغة المحفوظة
   applyLang(getSavedLang());
 
-  // تبديل اللغة
   if (langBtn) {
     langBtn.addEventListener("click", () => {
       const next = getSavedLang() === "en" ? "ar" : "en";
@@ -129,32 +127,55 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // التحقق من تسجيل الدخول
+  // ===== تسجيل الدخول (محلي + باك إند) =====
   const loginForm = document.getElementById("loginForm");
   if (loginForm) {
-    loginForm.addEventListener("submit", (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const email = emailInput.value.trim();
       const password = passInput.value.trim();
       const lang = getSavedLang();
 
+      // ✅ حساب الأدمن الثابت (محلي)
       if (email === "admin@locateiq.com" && password === "Admin@123") {
         localStorage.setItem("is_logged_in", "true");
         localStorage.setItem("user_role", "admin");
         localStorage.setItem("user_email", email);
         localStorage.setItem("user_name", "Admin");
+        localStorage.setItem("user_id", "1");
         window.location.href = "admin.html";
-      } else {
-        if (email.includes("@") && password.length >= 6) {
+        return;
+      }
+
+      // ✅ باقي المستخدمين (يتصلون بالباك إند)
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
           localStorage.setItem("is_logged_in", "true");
-          localStorage.setItem("user_role", "user");
+          localStorage.setItem("user_role", data.role);
           localStorage.setItem("user_email", email);
           localStorage.setItem("user_name", email.split('@')[0]);
-          window.location.href = "dashboard.html";
+          localStorage.setItem("user_id", data.userID);
+
+          if (data.role === "admin") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "dashboard.html";
+          }
         } else {
-          alert(I18N[lang].invalid_credentials);
+          alert(data.detail || I18N[lang].invalid_credentials);
         }
+      } catch (error) {
+        console.error("Login error:", error);
+        alert("❌ تعذر الاتصال بالخادم. تأكدي من تشغيل الباك إند.");
       }
     });
   }
